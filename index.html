@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بازی پانتومیم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090b; --surface:#141417; --surface-2:#1b1b20;
+  --border:#26262c; --border-strong:#35353c;
+  --text:#f4f4f5; --text-2:#a1a1aa; --text-3:#71717a;
+  --accent:#8b5cf6; --accent-2:#a78bfa; --accent-text:#a78bfa;
+  --accent-soft:rgba(139,92,246,.14);
+  --green:#10b981; --green-text:#34d399; --green-soft:rgba(16,185,129,.12);
+  --red:#f43f5e; --red-text:#fb7185; --red-soft:rgba(244,63,94,.1);
+  --amber:#f59e0b; --amber-text:#fbbf24; --amber-soft:rgba(245,158,11,.12);
+  --thead:rgba(255,255,255,.05);
+  --shadow:0 20px 50px rgba(0,0,0,.5);
+  --radius:20px;
+}
+body.light{
+  --bg:#f4f4f5; /* ✅ اصلاح: پس‌زمینه‌ی صفحه در حالت روشن هم روشن می‌شود */
+  --surface:#ffffff; --surface-2:#f7f7f8;
+  --border:#e6e6ea; --border-strong:#d4d4d9;
+  --text:#18181b; --text-2:#52525b; --text-3:#a1a1aa;
+  --accent-text:#7c3aed; --accent-soft:rgba(139,92,246,.09);
+  --green-text:#059669; --green-soft:rgba(16,185,129,.09);
+  --red-text:#e11d48; --red-soft:rgba(244,63,94,.07);
+  --amber-text:#92400e; --amber-soft:rgba(245,158,11,.1);
+  --thead:rgba(0,0,0,.035);
+  --shadow:0 20px 50px rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Vazirmatn',Tahoma,sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+  transition:background .35s ease,color .35s ease;
+}
+.glow{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;z-index:0;transition:opacity .35s}
+.glow-1{width:430px;height:430px;background:rgba(139,92,246,.28);top:-130px;inset-inline-end:-120px}
+.glow-2{width:390px;height:390px;background:rgba(244,63,94,.16);bottom:-150px;inset-inline-start:-130px}
+.glow-3{width:300px;height:300px;background:rgba(217,70,239,.14);top:42%;inset-inline-start:6%}
+body.light .glow{opacity:.3}
+.float-emoji{position:fixed;font-size:32px;opacity:.35;z-index:0;pointer-events:none;animation:floatEmoji 7s ease-in-out infinite}
+@keyframes floatEmoji{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-24px) rotate(6deg)}}
+body.light .float-emoji{opacity:.18}
+
+.theme-fab{position:fixed;top:16px;inset-inline-start:16px;z-index:40;width:46px;height:46px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:20px;cursor:pointer;transition:.25s;display:flex;align-items:center;justify-content:center}
+.theme-fab:hover{border-color:var(--accent);transform:translateY(-2px)}
+.fs-fab{position:fixed;top:70px;inset-inline-start:16px;z-index:40;width:46px;height:46px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:19px;cursor:pointer;transition:.25s;display:flex;align-items:center;justify-content:center}
+.fs-fab:hover{border-color:var(--accent);transform:translateY(-2px)}
+
+.screen{display:none;min-height:100vh;position:relative;z-index:1;padding:30px 16px 56px}
+.screen.active{display:block;animation:fadeUp .45s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.container{max-width:540px;margin:0 auto}
+
+.logo{font-size:64px;text-align:center;line-height:1;margin-bottom:6px;filter:drop-shadow(0 8px 22px rgba(139,92,246,.45))}
+h1.big{text-align:center;font-size:34px;font-weight:900;margin-bottom:6px}
+.subtitle{text-align:center;color:var(--text-2);font-size:14px;margin-bottom:26px}
+
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:7px}
+.field input{width:100%;background:var(--surface-2);border:1.5px solid var(--border);border-radius:14px;padding:13px 16px;color:var(--text);font-family:inherit;font-size:15px;outline:none;transition:.25s}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.field input.input-error{border-color:var(--red);box-shadow:0 0 0 4px var(--red-soft);animation:shakeX .45s}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;border-radius:15px;padding:15px 20px;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;transition:.25s;color:#fff}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#6d28d9)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(139,92,246,.4)}
+.btn-green{background:linear-gradient(135deg,#10b981,#059669)}
+.btn-green:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(16,185,129,.35)}
+.btn-red{background:linear-gradient(135deg,#f43f5e,#e11d48)}
+.btn-red:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(244,63,94,.35)}
+.btn-ghost{background:var(--surface-2);color:var(--text);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border-strong)}
+.btn-amber{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.btn-amber:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(245,158,11,.35)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.back-btn{display:inline-flex;align-items:center;gap:6px;width:auto;background:var(--surface-2);color:var(--text-2);border:1.5px solid var(--border);border-radius:999px;padding:8px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;margin-bottom:14px}
+.back-btn:hover{color:var(--text);border-color:var(--border-strong);transform:translateY(-1px)}
+.welcome{text-align:center;margin-bottom:18px}
+.welcome p:first-child{font-size:16px;font-weight:800}
+.welcome .wave{display:inline-block;animation:wave 2.5s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+.welcome .w-sub{color:var(--text-2);font-size:13px;margin-top:4px}
+
+.screen-title{text-align:center;font-size:22px;font-weight:900;margin-bottom:4px}
+.screen-sub{text-align:center;color:var(--text-2);font-size:13.5px;margin-bottom:22px}
+.progress{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.team-label{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1.5px solid var(--border);padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--text-2)}
+.team-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.team-dot.s1{background:var(--accent)}
+.team-dot.s2{background:var(--red)}
+.round-dots{display:flex;justify-content:center;gap:5px;margin-bottom:16px;flex-wrap:wrap}
+.round-dot{width:10px;height:10px;border-radius:50%;background:var(--border-strong);transition:.3s}
+.round-dot.s1{background:var(--accent)}
+.round-dot.s2{background:var(--red)}
+.round-dot.current{animation:dotPulse 1.4s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 3px var(--accent-soft);transform:scale(1.15)}50%{box-shadow:0 0 0 6px transparent;transform:scale(1.3)}}
+.warning{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--amber-soft);border:1px solid rgba(245,158,11,.3);color:var(--amber-text);padding:10px 14px;border-radius:14px;margin-bottom:14px;font-size:13px;font-weight:700;text-align:center}
+.speed-banner{text-align:center;padding:9px;background:var(--amber-soft);border:1px solid rgba(245,158,11,.3);color:var(--amber-text);border-radius:12px;margin-bottom:12px;font-weight:800;font-size:13.5px}
+.speed-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.speed-stats>div{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:10px 8px;text-align:center;font-size:11.5px;font-weight:700;color:var(--text-2)}
+.stat-val{display:block;font-size:22px;font-weight:900;color:var(--text);margin-top:2px}
+
+.mode-card{display:block;width:100%;text-align:right;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;cursor:pointer;font-family:inherit;color:var(--text);transition:.25s}
+.mode-card .m-emoji{font-size:30px}
+.mode-card h3{font-size:17px;font-weight:800;margin:8px 0 4px}
+.mode-card p{font-size:13px;color:var(--text-2);line-height:1.9}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice-btn{display:flex;align-items:center;gap:10px;width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:15px;padding:14px 15px;color:var(--text);font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;transition:.2s;text-align:right}
+.choice-btn:hover:not(:disabled),.mode-card:hover{box-shadow:0 10px 24px rgba(0,0,0,.35)}
+body.light .choice-btn:hover:not(:disabled),body.light .mode-card:hover{box-shadow:0 10px 24px rgba(0,0,0,.1)}
+.choice-btn.selected{border-color:var(--accent);background:var(--accent-soft)}
+.cat-emoji{font-size:22px;line-height:1}
+.cb-check{margin-inline-start:auto;opacity:0;color:var(--accent-text);font-weight:900;transition:.2s}
+.choice-btn.selected .cb-check{opacity:1}
+.lv-name{font-weight:800}
+.lv-pts{font-size:11.5px;color:var(--text-3);font-weight:600;margin-inline-start:6px}
+
+/* سکه سه‌بعدی */
+.coin-wrap{perspective:1000px;width:180px;height:180px;margin:30px auto}
+.coin{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 2.6s cubic-bezier(.18,.7,.22,1)}
+.coin-face{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:900;color:#fff;text-align:center;padding:12px}
+.coin-front{background:radial-gradient(circle at 32% 28%,#a78bfa,#7c3aed 62%,#5b21b6);box-shadow:0 14px 40px rgba(124,58,237,.45),inset 0 0 0 8px rgba(255,255,255,.12)}
+.coin-back{background:radial-gradient(circle at 32% 28%,#34d399,#059669 62%,#065f46);box-shadow:0 14px 40px rgba(5,150,105,.4),inset 0 0 0 8px rgba(255,255,255,.12);transform:rotateY(180deg)}
+.coin-face .cf-emoji{font-size:30px}
+.coin-face .cf-label{font-size:15px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coin-result{text-align:center;font-size:16.5px;font-weight:800;color:var(--accent-text);min-height:30px;margin-bottom:18px;line-height:2}
+.coin-shadow{width:110px;height:14px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(8px);margin:0 auto;transition:.3s}
+.coin-shadow.flipping{animation:shadowFlip 2.6s ease}
+@keyframes shadowFlip{0%{width:110px;opacity:1}50%{width:52px;opacity:.35}100%{width:110px;opacity:1}}
+body.light .coin-shadow{background:rgba(0,0,0,.2)}
+.side-tag{display:inline-block;font-size:11.5px;font-weight:700;background:var(--accent-soft);color:var(--accent-text);border:1px solid var(--border);padding:3px 12px;border-radius:999px;margin-bottom:8px}
+
+/* صفحه بازی */
+.play-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.pill{background:var(--surface);border:1.5px solid var(--border);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:700;color:var(--text-2)}
+.pill b{color:var(--accent-text)}
+.score-row{display:flex;justify-content:center;gap:12px;margin-bottom:18px;font-size:13px;font-weight:700;color:var(--text-2);flex-wrap:wrap}
+.score-row span{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:4px 12px}
+.score-row b{color:var(--text)}
+.topic-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:22px 18px;text-align:center;box-shadow:var(--shadow);margin-bottom:18px}
+.topic-label{font-size:12px;color:var(--text-3);font-weight:700;margin-bottom:8px}
+.topic-text{font-size:23px;font-weight:900;line-height:1.7;word-break:break-word}
+.topic-text.reveal{animation:topicReveal .5s ease}
+@keyframes topicReveal{0%{opacity:0;transform:scale(.85)}60%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+.ring-wrap{position:relative;width:190px;height:190px;margin:0 auto 18px}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:11}
+.ring-fg{fill:none;stroke:var(--accent);stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset .95s linear,stroke .3s}
+.ring-fg.warning{stroke:var(--amber)}
+.ring-fg.danger{stroke:var(--red)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.seconds{font-size:44px;font-weight:900;color:var(--text);transition:color .3s}
+.seconds.warning{color:var(--amber-text)}
+.seconds.danger{color:var(--red-text);animation:pulse .8s infinite}
+.seconds-label{font-size:11.5px;color:var(--text-3);font-weight:700}
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+
+/* نتیجه نوبت — گزارش کامل */
+.report-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px dashed var(--border);font-size:14px}
+.report-row:last-of-type{border-bottom:none}
+.r-label{color:var(--text-2);font-weight:600}
+.r-val{font-weight:800;text-align:left}
+.report-row.total{border-bottom:none;border-top:1.5px solid var(--border-strong);margin-top:4px;font-size:15px}
+.report-row.total .r-val{color:var(--green-text);font-size:20px}
+.score-big{animation:scorePop .6s cubic-bezier(.22,1,.36,1)}
+@keyframes scorePop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+
+/* پایان بازی */
+.winner{text-align:center;margin-bottom:18px}
+.winner-emoji{font-size:56px;display:inline-block;animation:trophyBounce 1.4s ease-in-out infinite}
+@keyframes trophyBounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+.winner-title{font-size:26px;font-weight:900;margin:8px 0 4px}
+.winner-score{color:var(--text-2);font-weight:700;font-size:15px}
+table.history{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:14px}
+table.history th{background:var(--thead);color:var(--text-2);font-weight:800;padding:10px 8px;text-align:right;border-bottom:1.5px solid var(--border-strong)}
+table.history td{padding:9px 8px;border-bottom:1px solid var(--border);color:var(--text);text-align:right}
+table.history tr td:first-child{color:var(--text-3)}
+
+/* شمارش معکوس */
+#countdownOverlay{position:fixed;inset:0;background:rgba(9,9,11,.82);backdrop-filter:blur(8px);z-index:60;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+#countdownOverlay.show{opacity:1;pointer-events:auto}
+#countdownNum{font-size:110px;font-weight:900;color:#fff;text-shadow:0 10px 40px rgba(139,92,246,.8);animation:pulse .9s ease infinite}
+@keyframes pulse{0%{transform:scale(.85);opacity:.6}45%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:.85}}
+body.light #countdownOverlay{background:rgba(244,244,245,.88)}
+body.light #countdownNum{color:#18181b}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:70;display:none}
+
+.section-label{font-size:13px;font-weight:800;color:var(--text-2);margin:20px 0 10px}
+.mt{margin-top:16px}
+
+@media (max-width:420px){
+  .topic-text{font-size:20px}
+  .float-emoji{display:none}
+  h1.big{font-size:28px}
+  #countdownNum{font-size:84px}
+}
+
+/* ============ آنلاین: لابی، اتاق، تماشاگر (جدید) ============ */
+.mode-card:disabled,.choice-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.tab-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.tab-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:15px;padding:13px 10px;font-family:inherit;font-size:14.5px;font-weight:800;color:var(--text-2);cursor:pointer;transition:.2s}
+.tab-btn.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text)}
+.online-hint{background:var(--accent-soft);border:1.5px solid var(--border);color:var(--accent-text);padding:11px 14px;border-radius:14px;margin-bottom:14px;font-size:13px;font-weight:800;text-align:center;line-height:1.9}
+.room-code-box{background:var(--accent-soft);border:1.5px dashed var(--accent);border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px}
+.room-code-num{font-size:48px;font-weight:900;letter-spacing:12px;color:var(--accent-text);direction:ltr;line-height:1.4}
+.player-row{display:flex;justify-content:space-between;align-items:center;background:var(--surface-2);border:1.5px solid var(--border);border-radius:14px;padding:13px 16px;margin-bottom:10px;font-weight:700;font-size:14px}
+.p-dot{width:11px;height:11px;border-radius:50%;display:inline-block;background:var(--border-strong);transition:.3s}
+.p-dot.on{background:var(--green);box-shadow:0 0 0 4px var(--green-soft)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong);padding:12px 20px;border-radius:14px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow);z-index:80;opacity:0;transition:.35s;pointer-events:none;max-width:90vw;text-align:center;line-height:1.9}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:420px){.room-code-num{font-size:38px;letter-spacing:8px}}
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+<div class="float-emoji" style="top:14%;inset-inline-end:6%">🎭</div>
+<div class="float-emoji" style="top:70%;inset-inline-end:10%;animation-delay:1.5s">✨</div>
+<div class="float-emoji" style="top:24%;inset-inline-start:8%;animation-delay:3s">🎪</div>
+<div class="float-emoji" style="top:76%;inset-inline-start:6%;animation-delay:.8s">⭐</div>
+<button class="theme-fab" id="themeBtn" type="button" title="تغییر تم">☀️</button>
+<button class="fs-fab" id="fsBtn" type="button" title="تمام صفحه">⛶</button>
+<div class="toast" id="toast"></div>
+<canvas id="confetti"></canvas>
+<div id="countdownOverlay"><div id="countdownNum">۳</div></div>
+
+<!-- ۱) معرفی تیم‌ها (حالت لوکال) -->
+<section id="screen-setup" class="screen active">
+  <div class="container">
+    <div class="logo">🎭</div>
+    <h1 class="big">بازی پانتومیم</h1>
+    <p class="subtitle">حدس و اشارات — برای دو تیم</p>
+    <div class="card">
+      <div class="welcome">
+        <p><span class="wave">👋</span> خوش آمدید!</p>
+        <p class="w-sub">نام دو تیم را وارد کنید تا شروع کنیم</p>
+      </div>
+      <div class="field">
+        <label for="team1">اسم تیم اول</label>
+        <input id="team1" type="text" placeholder="مثلاً: شیرهای گرسنه" maxlength="20">
+      </div>
+      <div class="field">
+        <label for="team2">اسم تیم دوم</label>
+        <input id="team2" type="text" placeholder="مثلاً: عقاب‌های طلایی" maxlength="20">
+      </div>
+      <button class="btn btn-primary" id="startBtn" type="button">بریم مرحله بعد</button>
+    </div>
+  </div>
+</section>
+
+<!-- ۲) انتخاب حالت -->
+<section id="screen-mode" class="screen">
+  <div class="container">
+    <button class="back-btn" id="backFromMode" type="button">→ برگشت به اسم تیم‌ها</button>
+    <h2 class="screen-title">حالت بازی را انتخاب کن</h2>
+    <p class="screen-sub">تیم‌های آماده: <b id="modeTeams"></b></p>
+    <button class="mode-card" data-mode="normal" type="button">
+      <span class="m-emoji">🎯</span>
+      <h3>حالت عادی</h3>
+      <p>۱۰ نوبت برای دو تیم — انتخاب دسته و سطح — ضرب‌المثل دارد — امتیاز سطح + پاداش زمان ⏱️</p>
+    </button>
+    <button class="mode-card" data-mode="speed" type="button">
+      <span class="m-emoji">⚡</span>
+      <h3>حالت سرعتی</h3>
+      <p>هر تیم یک راند — کلمه‌های تصادفی 🎲 — هر حدس درست تایمر را ریست می‌کند — یک رد کردن — بدون ضرب‌المثل</p>
+    </button>
+  </div>
+</section>
+
+<!-- ۳) قرعه‌کشی سکه -->
+<section id="screen-coin" class="screen">
+  <div class="container">
+    <button class="back-btn" id="backFromCoin" type="button">→ برگشت به انتخاب حالت</button>
+    <h2 class="screen-title">قرعه‌کشی سکه</h2>
+    <p class="screen-sub">🟡 روی سکه: <b id="coinSideT1"></b> &nbsp;·&nbsp; 🔵 پشت سکه: <b id="coinSideT2"></b></p>
+    <div class="coin-wrap">
+      <div class="coin" id="coin">
+        <div class="coin-face coin-front"><span class="cf-emoji">🎭</span><span class="cf-label" id="coinFrontLabel">تیم یک</span></div>
+        <div class="coin-face coin-back"><span class="cf-emoji">🎪</span><span class="cf-label" id="coinBackLabel">تیم دو</span></div>
+      </div>
+    </div>
+    <div class="coin-shadow" id="coinShadow"></div>
+    <div class="coin-result" id="coinResult">سکه را بیندازید</div>
+    <button class="btn btn-primary" id="flipBtn" type="button">🪙 انداختن سکه</button>
+    <button class="btn btn-green mt" id="coinNext" type="button" style="display:none">ادامه بده</button>
+  </div>
+</section>
+
+<!-- ۴) انتخاب دسته و سطح -->
+<section id="screen-choose" class="screen">
+  <div class="container">
+    <button class="back-btn" id="backFromChoose" type="button">→ برگشت به انتخاب حالت</button>
+    <h2 class="screen-title">دسته و سطح را انتخاب کن</h2>
+    <div class="progress" id="progressBar"></div>
+    <div class="round-dots" id="roundDots"></div>
+    <p class="screen-sub" id="chooseTurn"></p>
+    <div class="section-label" style="margin-top:0">دسته‌بندی</div>
+    <div class="grid-2" id="catGrid">
+      <button class="choice-btn cat-btn" data-cat="میوه‌ها" type="button"><span class="cat-emoji">🍎</span>میوه‌ها<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="حیوانات" type="button"><span class="cat-emoji">🦁</span>حیوانات<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="اشیاء خانه" type="button"><span class="cat-emoji">🛋️</span>اشیاء خانه<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="وسایل نقلیه" type="button"><span class="cat-emoji">🚗</span>وسایل نقلیه<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="شغل‌ها" type="button"><span class="cat-emoji">👷</span>شغل‌ها<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="پوشاک" type="button"><span class="cat-emoji">👕</span>پوشاک<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="ورزش‌ها" type="button"><span class="cat-emoji">⚽</span>ورزش‌ها<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="فیلم و سریال" type="button"><span class="cat-emoji">🎬</span>فیلم و سریال<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="فانتزی" type="button"><span class="cat-emoji">🧙</span>فانتزی<span class="cb-check">✓</span></button>
+      <button class="choice-btn cat-btn" data-cat="ضرب‌المثل" type="button"><span class="cat-emoji">📜</span>ضرب‌المثل<span class="cb-check">✓</span></button>
+    </div>
+    <div class="section-label" id="levelLabel" style="display:none">سطح دشواری</div>
+    <div class="grid-2" id="levelGrid" style="display:none">
+      <button class="choice-btn level-btn" data-level="آسان" type="button"><span class="lv-name">آسان</span><span class="lv-pts"></span><span class="cb-check">✓</span></button>
+      <button class="choice-btn level-btn" data-level="متوسط" type="button"><span class="lv-name">متوسط</span><span class="lv-pts"></span><span class="cb-check">✓</span></button>
+      <button class="choice-btn level-btn" data-level="سخت" type="button"><span class="lv-name">سخت</span><span class="lv-pts"></span><span class="cb-check">✓</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ۵) بازی -->
+<section id="screen-play" class="screen">
+  <div class="container">
+    <div class="warning" id="playWarning">🔒 فقط بازیکن اجراکننده صفحه را ببیند — بقیه فاصله بگیرند!</div>
+    <div class="play-top">
+      <span class="pill">👥 <b id="playTeam"></b></span>
+      <span class="pill" id="playTurn"></span>
+      <span class="pill" id="playCat"></span>
+    </div>
+    <div class="score-row" id="playScores"></div>
+    <div class="speed-banner" id="speedBanner" style="display:none">⚡ حالت سرعتی — هر حدس درست تایمر را ریست می‌کند!</div>
+    <div class="speed-stats" id="speedStats" style="display:none">
+      <div>امتیاز نوبت<span class="stat-val" id="speedTurnScore">۰</span></div>
+      <div>کلمات درست<span class="stat-val" id="speedCorrectCount">۰</span></div>
+      <div>رد کردن<span class="stat-val" id="speedSkipsLeft">۱</span></div>
+    </div>
+    <div class="topic-box">
+      <div class="topic-label">این را پانتومیم کن</div>
+      <div class="topic-text" id="topicText"></div>
+    </div>
+    <div class="ring-wrap">
+      <svg viewBox="0 0 120 120">
+        <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
+        <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="54"></circle>
+      </svg>
+      <div class="ring-center">
+        <div class="seconds" id="secondsText">۶۰</div>
+        <div class="seconds-label">ثانیه</div>
+      </div>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-green" id="foundBtn" type="button">✓ حدس زدند</button>
+      <button class="btn btn-red" id="failBtn" type="button">✗ حدس نزدند</button>
+      <button class="btn btn-amber" id="skipBtn" type="button" style="display:none">⏭️ رد کلمه</button>
+    </div>
+  </div>
+</section>
+
+<!-- ۶) نتیجه نوبت — گزارش کامل -->
+<section id="screen-result" class="screen">
+  <div class="container">
+    <h2 class="screen-title" style="margin-bottom:14px">نتیجه این دست</h2>
+    <div class="card" id="scoreReport"></div>
+    <p style="text-align:center;color:var(--text-2);font-size:13.5px;font-weight:700;margin:16px 0 12px" id="nextTurnMsg"></p>
+    <button class="btn btn-primary" id="nextTurnBtn" type="button">نوبت بعدی</button>
+  </div>
+</section>
+
+<!-- ۷) پایان بازی -->
+<section id="screen-final" class="screen">
+  <div class="container">
+    <div class="winner">
+      <div class="winner-emoji" id="finalEmoji">🏆</div>
+      <div class="winner-title" id="finalTitle"></div>
+      <div class="winner-score" id="finalScore"></div>
+      <div class="winner-score" id="finalSpeedStats" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;font-weight:800;margin-bottom:4px">جزئیات نوبت‌ها</h3>
+      <table class="history">
+        <thead><tr><th>#</th><th>تیم</th><th>دسته</th><th>سطح</th><th>کلمه</th><th>نتیجه</th><th>امتیاز</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-primary mt" id="newGameBtn" type="button">🔄 بازی جدید</button>
+  </div>
+</section>
+
+<script>
+'use strict';
+/* ============================================================
+   داده‌های بازی — هر دسته سه سطح: آسان / متوسط / سخت
+   ✅ سبزیجات و اعضای بدن حذف شدند
+   ✅ دسته «فیلم و سریال» با فیلم‌ها و سریال‌های خارجی اضافه شد
+   ✅ به هر سطح هر دسته ۱۰ کلمه اضافه شد (هر سطح = ۲۰ کلمه)
+   ✅ ضرب‌المثل‌ها هم ۱۰تا به هر سطح اضافه شدند (هر سطح = ۵۰)
+   ✅ دسته «فانتزی» با ۶۰ موضوع جدید اضافه شد (هر سطح = ۲۰ کلمه)
+   ============================================================ */
+const WORD_CATS = ['میوه‌ها','حیوانات','اشیاء خانه','وسایل نقلیه','شغل‌ها','پوشاک','ورزش‌ها','فیلم و سریال','فانتزی'];
+
+const WORDS = {
+  'میوه‌ها': {
+    'آسان': [
+      'سیب','موز','پرتقال','انگور','هندوانه','لیمو','توت‌فرنگی','آناناس','هلو','آلبالو',
+      'انار','طالبی','گیلاس','زردآلو','کیوی','انجیر','خرما','نارگیل','آووکادو','نارنگی'
+    ],
+    'متوسط': [
+      'شاتوت','به','زالزالک','گریپ‌فروت','گلابی','خرمالو','پاپایا','مانگو','توت','شاه‌توت',
+      'آلوبخارا','قیسی','لیموترش','لیموشیرین','نارنج','پرتقال خونی','هندوانه زرد','خربزه','بهارنارنج','انگور بی‌دانه'
+    ],
+    'سخت': [
+      'رامبوتان','لیچی','میوه‌ی اژدها','جک‌فروت','گواوا','پشن‌فروت','شلیل','تمرهندی','سنجد','غوره',
+      'زیتون','عناب','کُنار','زرشک','بلوبری','کرنبری','انجیر هندی','آلبالوی جنگلی','لیمو عمانی','خربزه درختی'
+    ]
+  },
+  'حیوانات': {
+    'آسان': [
+      'گربه','سگ','شیر','فیل','خرگوش','گاو','مرغ','اسب','پرنده','ماهی',
+      'خرس','میمون','زرافه','گوسفند','بز','خروس','اردک','موش','مار','قورباغه'
+    ],
+    'متوسط': [
+      'پلنگ','کفتار','کروکودیل','لاک‌پشت','خفاش','عقاب','جغد','شتر','الاغ','روباه',
+      'گورخر','فک','دلفین','کوسه','عنکبوت','حلزون','خرچنگ','پروانه','زنبور','سنجاب'
+    ],
+    'سخت': [
+      'آرمادیلو','پلاتیپوس','تشی','پنگولن','کایمان','سمور','راسو','سمندر','آفتاب‌پرست','سوسمار',
+      'کرکس','فلامینگو','باکلان','خرس تنبل','پلنگ برفی','عقرب','هزارپا','کرم ابریشم','شترمرغ','خرس قطبی'
+    ]
+  },
+  'اشیاء خانه': {
+    'آسان': [
+      'یخچال','تلویزیون','جاروبرقی','لباسشویی','فرش','مبل','آینه','چراغ','سماور','کتری',
+      'اتو','قابلمه','ماهیتابه','سطل زباله','شمع','ساعت دیواری','گلدان','پرده','کولر','بخاری'
+    ],
+    'متوسط': [
+      'آبمیوه‌گیری','سرخ‌کن','زودپز','چرخ‌خیاطی','ریش‌تراش','سشوار','پنکه','اسپیکر','قفسه‌کتاب','جاکفشی',
+      'چای‌ساز','گوشت‌کوب','ساطور','آب‌پاش','تخته‌اتو','رخت‌آویز','چراغ‌قوه','بخارپز','گلیم','جاروی دستی'
+    ],
+    'سخت': [
+      'ناخن‌گیر','لوله‌بازکن','آبکش','قیف','رنده','سوهان','فلاسک','قندان','شکرپاش','نمک‌پاش',
+      'گلاب‌پاش','جاشمعی','دفترچه تلفن','آنتن رومیزی','تلمبه هوا','پاشویه','لختک','نعلبکی','حوله‌پنجه','سبد رخت'
+    ]
+  },
+  'وسایل نقلیه': {
+    'آسان': [
+      'ماشین','اتوبوس','موتور','دوچرخه','قطار','هواپیما','کشتی','تاکسی','آمبولانس','ماشین آتش‌نشانی',
+      'کامیون','تراکتور','وانت','اسکوتر','مترو','قایق','هلیکوپتر','اتوبار','کالسکه','ویلچر'
+    ],
+    'متوسط': [
+      'ون','مینی‌بوس','تریلی','جرثقیل','لودر','بیل‌مکانیکی','غلتک','جت‌اسکی','قایق بادی','سورتمه',
+      'تراموا','تک‌چرخ','سه‌چرخه','چهارچرخه','باگی','جنگنده','بالن','پهپاد','زورق','کلک'
+    ],
+    'سخت': [
+      'زیردریایی','هاورکرافت','تله‌کابین','ترن هوایی','قطار مگلو','موشک فضایی','شاتل فضایی','کشتی بادبانی','درشکه','کجاوه',
+      'ریکشا','توک‌توک','تانکر','پاراگلایدر','دلتاپلان','قایق پدالی','ترالی','واگن اسبی','هاوربورد','جت‌پک'
+    ]
+  },
+  'شغل‌ها': {
+    'آسان': [
+      'پزشک','پرستار','معلم','آشپز','نانوا','پلیس','آتش‌نشان','خلبان','آرایشگر','خیاط',
+      'کشاورز','دندانپزشک','نقاش','خواننده','فوتبالیست','رفتگر','بقال','قصاب','مکانیک','گارسون'
+    ],
+    'متوسط': [
+      'جوشکار','برق‌کار','لوله‌کش','نجار','آهنگر','کفاش','قناد','ماهیگیر','چوپان','عکاس',
+      'خبرنگار','مترجم','وکیل','قاضی','پیک پیتزا','راننده','مدل','باغبان','دزد دریایی','جادوگر'
+    ],
+    'سخت': [
+      'حسابدار','معمار','داروساز','دامپزشک','باستان‌شناس','غواص','شعبده‌باز','دلقک','عروسک‌گردان','صداپیشه',
+      'هواشناس','زرگر','سنگ‌تراش','چلنگر','سبدساز','کبوترباز','قهوه‌چی','طناب‌باز','آتش‌خوار','منجم'
+    ]
+  },
+  'پوشاک': {
+    'آسان': [
+      'پیراهن','شلوار','دامن','کت‌وشلوار','کاپشن','ژاکت','پلیور','جوراب','کفش','صندل',
+      'دمپایی','کلاه','شال','روسری','دستکش','شلوارک','تیشرت','لباس خواب','چادر','مانتو'
+    ],
+    'متوسط': [
+      'هودی','یقه‌اسکی','پالتو','بارانی','کراوات','پاپیون','کمربند','کیف دستی','عینک آفتابی','ساعت مچی',
+      'جوراب‌شلواری','سرهمی','مایو','دامن‌شلواری','گیوه','نعلین','چکمه','جاجوراب','کراپ','پانچو'
+    ],
+    'سخت': [
+      'قبا','لباس کُردی','لباس سرداری','عبا','کلاه نمدی','کلاه‌گیس','لباس فضانوردی','زره','لباس غواصی','لباس عروس',
+      'عمامه','ردا','گردنبند','سنجاق سینه','گوشواره','پوتین','کمربند کاراته','شلوار بگ','کلاه حصیری','باندانا'
+    ]
+  },
+  'ورزش‌ها': {
+    'آسان': [
+      'فوتبال','والیبال','بسکتبال','شنا','دوچرخه‌سواری','دویدن','کوهنوردی','طناب‌زنی','تنیس','پینگ‌پنگ',
+      'کشتی','بوکس','کاراته','ژیمناستیک','اسکیت','بولینگ','گلف','بدمینتون','هاکی','شطرنج'
+    ],
+    'متوسط': [
+      'دارت','بیلیارد','اسنوکر','پارکور','اسکیت‌برد','موج‌سواری','کایاک','قایق‌سواری','دو و میدانی','پرش طول',
+      'پرش ارتفاع','وزنه‌برداری','کیک‌بوکسینگ','تکواندو','جودو','یوگا','ورزش باستانی','چوگان','بیسبال','راگبی'
+    ],
+    'سخت': [
+      'کرلینگ','پرش با نیزه','پرتاب دیسک','پرتاب نیزه','پرتاب وزنه','سه‌گانه','بانجی جامپینگ','کایت‌سواری','اسنوبورد','اسکی آبی',
+      'اسکی برفی','هاکی روی یخ','تیراندازی با کمان','شمشیربازی','اسب‌سواری','گاوبازی','سومو','سنگ‌نوردی','یخ‌نوردی','شنای پروانه'
+    ]
+  },
+  'فیلم و سریال': {
+    'آسان': [
+      'تایتانیک','آواتار','هری پاتر','جیمز باند','جان ویک','سریع و خشمگین','پارک ژوراسیک','کینگ‌کونگ','مرد عنکبوتی','بتمن',
+      'سوپرمن','آیرون‌من','یخ‌زده','شیرشاه','جستجوی نیمو','داستان اسباب‌بازی','ماداگاسکار','کونگ‌فو پاندا','مینیون‌ها','تنها در خانه'
+    ],
+    'متوسط': [
+      'فرندز','بازی تاج و تخت','چیزهای عجیب','بریکینگ بد','وایکینگ‌ها','لاک‌پشت‌های نینجا','ترمیناتور','راکی','رامبو','ماتریکس',
+      'جنگ ستارگان','دزدان دریایی کارائیب','ایندیانا جونز','شرک','ای‌تی','جوکر','گادزیلا','مأموریت غیرممکن','دیو و دلبر','بالا'
+    ],
+    'سخت': [
+      'پدرخوانده','رستگاری در شاوشنک','پرواز بر فراز آشیانه فاخته','نابخشوده','بیمار انگلیسی','سکوت بره‌ها','دفترچه خاطرات','زن زیبا','روح','رقص با گرگ‌ها',
+      'فارست گامپ','ذهن زیبا','باشگاه مبارزه','پالپ فیکشن','کازابلانکا','روانی','ادیسه فضایی','سینما پارادیزو','خانه کاغذی','مسیر سبز'
+    ]
+  },
+  'فانتزی': {
+    'آسان': [
+      'اژدها','پری','جن','غول','تک‌شاخ','قالی پرنده','چراغ آرزو','عصای نور','کلاه تیز','قلعه معلق',
+      'دیو','فرشته','کوتوله','پری دریایی','شمشیر نور','سپر بلورین','سیب طلایی','قورباغه سخنگو','کلید طلایی','در پنهان'
+    ],
+    'متوسط': [
+      'اسب بالدار','دریای ابر','جنگل آینه‌ها','شهر شناور','قطار ستاره‌ای','کتاب افسانه','آیینه راز','کریستال جادویی','چشمه جوانی','قالیچه حرف‌زن',
+      'برج بلورین','غار بلورین','درخت سخنگو','پل رنگین‌کمان','کشتی فضایی','ربات غول‌پیکر','گردنبند نیرو','تاج پنهان','نقشه گنج افسانه‌ای','پرنده بلورین'
+    ],
+    'سخت': [
+      'کهکشان راه ابریشم','ساعت شنی زمان','درخت آرزوها','پل میان ستاره‌ها','جزیره روی ابر','کتاب هزار افسانه','ماهی آسمان','پرنده آتش','قلب یخی','سایه سخنگو',
+      'چاه بی‌پایان','دروازه ابعاد','آینه سرنوشت','معمای هزارتو','روح جنگل','نگهبان زمان','ستاره دنباله‌دار آرزو','شهر خاطرات','قفل راز','نغمه سکوت'
+    ]
+  },
+  'ضرب‌المثل': {
+    'آسان': [
+      'آب در هاون کوبیدن','کاسه داغ‌تر از آش','دیگ به دیگ می‌گه روت سیاه','موش تو سوراخ نمی‌رفت، جارو به دمش می‌بست','شتر دیدی، ندیدی',
+      'خانه از پای بست ویران است','یک دست صدا ندارد','هر که بامش بیشتر، برفش بیشتر','آش نخورده، دهن سوخته','خواستن توانستن است',
+      'گربه دم در چاه','تا تنور داغ است بچسب','با یک گل بهار نمی‌شود','نابرده رنج، گنج میسر نمی‌شود','از چشم دور، از دل دور',
+      'هر گردی گردو نیست','جوجه را آخر پاییز می‌شمارند','صد گفته چون نیم کردار نیست','گندم از گندم‌زار بیرون نمی‌رود','سنگ بزرگ نشانه‌ی نزدن است',
+      'از تو حرکت، از او برکت','دل به دل راه دارد','قطره قطره جمع گردد، وانگهی دریا شود','گریز تا گربه ظرف‌شو','دیر رسیدن بهتر از نرسیدن است',
+      'شتر در خواب بیند پنبه‌دانه','ماهی را هر وقت از آب بگیری تازه است','با یک تیر دو نشان زدن','گرگه مادرخورده','سرت را کلاه گذاشتن',
+      'برایش خالی بستن','دود از کپه بلند شدن','خم به ابرو نمی‌آورد','ازش می‌شود پوست کند','شاخش را باد می‌کند',
+      'کاسه‌ی صبرش لبریز شد','سر به سرش گذاشتن','پوست و استخوان شدن','هوای کسی را داشتن','پا در وسط گذاشتن',
+      'از این پا به آن پا کردن','زیر آب زدن','سر و ته شدن','کلاه خود را قاضی کردن','از هر دست که بدهی، از همان دست می‌گیری',
+      'دست از پا خطا نمی‌کند','از دل برود هر آن‌که از دیده برفت','با یک سنگ دو گنجشک زدن','آب از سر گذشت','به کچلی گفتند ریشت را بگیر'
+    ],
+    'متوسط': [
+      'آتش‌بیار معرکه','آب زیر کاه','سنگ روی یخ شدن','خشت اول کج گذاشتن','از کیسه‌ی خلیفه دادن',
+      'تیشه به ریشه زدن','عجله کار شیطان است','شب پرستوها سرد است','از گرسنگی پوست کندن','کله‌اش بوی گشنیز نمی‌دهد',
+      'گل گندم زدن','کفتر با کبوتر باهاس، شاهین جدا بلاست','سیاه‌مست شدن','چشم‌بسته پاکت پست','از چاله در چاه افتادن',
+      'از ماست که بر ماست','یک لقمه در دهن گذاشتن','سرش را گچ گرفتن','خمیرش را از آب درآوردن','آب‌ها از آسیاب افتاد',
+      'غول آخر','فوت کردن در قیف','نان به نرخ باید خورد','سر و دست شکستن','سنگ تمام گذاشتن',
+      'صورت مسأله پاک شد','فوت‌کوزه‌گری','مرغ همسایه غازه','سر از پا نمی‌شناسد','سر از لاک بیرون آوردن',
+      'پنبه را از گوش درآوردن','زیره به کرم دادن','گنجشک‌خوش‌خوان','مثل آب خوردن','مثل برق و باد',
+      'ماهی از سر می‌گندد','کفگیرش به ته دیگ خورد','دیوار موش دارد، موش هم گوش دارد','ماست‌مالی کردن','شیرین‌کاری کردن',
+      'خواب خرس','عرب جاهل','کار پاکان را قیاس از خود مگیر','خاک‌شور شدن','علف باید به دهن گاو رسید',
+      'از چشم افتادن','شانه خالی کردن','کاسه‌لیس شدن','پا را در یک کفش کردن','شتر دیدی، ندیدی دیدمت'
+    ],
+    'سخت': [
+      'آدمی را عقل باید، نه مال و جمال','آدمی به امید زنده است','آب از سر گذشت، چه یک ذره چه صد منجما','این جهان کوه است و فعل ما ندا','باد آورده را باد می‌برد',
+      'به کوری چشم دشمن','خود کرده را تدارک نیست','در خانه اگر کس است، یک حرف است وگرنه هزار حرف','دو چاقی در یک غلاف','دست بالای دست است',
+      'دم را غنیمت شمار','دنیا دو روز است','کاسه‌ی زیر نیم‌کاسه','کوه به کوه نمی‌رسد، آدم به آدم می‌رسد','هیچ مرفه بی‌درد نبود',
+      'از آن نترس که های‌های دارد، از آن بترس که سرش بی‌موهاست','هرچه پیش آید، خیر همان است','عاقبت جوینده، یابنده بود','هر که طبیب خود باشد، عیب خود را چه داند','هر بذری که بکاری، از همان برون آید',
+      'چراغی که به خانه رواست، از مسجد سوزانند','چشم‌ها را باید شست، جور دیگر باید دید','از این ستون تا آن ستون','از این شاخه به آن شاخه پریدن','از پرده در افتادن',
+      'از خجالت آب شدن','از کجا معلوم','از این حرف‌ها','سرت را درد نیاور','پُررو شدن',
+      'یک‌دنده بودن','شاخ در آوردن','گره کور','بوی گور می‌دهد','قربان‌گوشه‌ی شما',
+      'عمو سبزی‌فروش، سیر و پیاز نداری؟','طبل توخالی','ورق برگشتن','قلم‌فرسایی کردن','توپ را به توپ میدان بردن',
+      'غر لبه‌پرتی','چرت و پرت گفتن','دست‌پاچه شدن','روغن‌مالی کردن','دماغ بالا گرفتن',
+      'حاضرجواب بودن','یکی دیگر از رقص‌های محبوب آفریقایی','خدا را چه دیده‌است','خدا چیز دیگری خواسته','دست به دهان شدن'
+    ]
+  }
+};
+
+/* امتیاز سطح (حالت عادی + حالت سرعتی): پیش‌فرض ۲/۳/۴ — ضرب‌المثل ۵/۷/۱۰ */
+const POINTS = {};
+WORD_CATS.forEach(function(c){ POINTS[c] = { 'آسان': 2, 'متوسط': 3, 'سخت': 4 }; });
+POINTS['ضرب‌المثل'] = { 'آسان': 5, 'متوسط': 7, 'سخت': 10 };
+
+/* پاداش زمانی حالت عادی — به امتیاز سطح اضافه می‌شود؛ هرچه سریع‌تر حدس بزنند پاداش بیشتر:
+   بالای ۵۰ ثانیه = +۵ · بالای ۴۰ = +۴ · بالای ۳۰ = +۳ · بالای ۲۰ = +۲ · بالای ۱۰ = +۱ · کمتر یا مساوی ۱۰ = ۰ */
+function normalTimePoints(left) {
+  if (left > 50) return 5;
+  if (left > 40) return 4;
+  if (left > 30) return 3;
+  if (left > 20) return 2;
+  if (left > 10) return 1;
+  return 0;
+}
+
+/* حالت سرعتی بدون ضرب‌المثل */
+const SPEED_CATS = WORD_CATS.filter(function(c){ return c !== 'ضرب‌المثل'; });
+
+/* ============================================================
+   منطق بازی — وضعیت، تایمر، سکه، صدا و اتصال دکمه‌ها
+   ============================================================ */
+const TOTAL_SECONDS = 60;
+const NORMAL_TURNS = 10;
+const SPEED_TURNS = 1; /* تعداد راند سرعتی هر تیم (مجموع نوبت‌ها = ×۲) */
+const RING_CIRC = 2 * Math.PI * 54;
+const LEVELS = ['آسان', 'متوسط', 'سخت'];
+
+const state = {
+  teams: ['تیم یک', 'تیم دو'],
+  scores: [0, 0],
+  turn: 0,
+  totalTurns: NORMAL_TURNS,
+  mode: 'normal',
+  startingTeam: 0,
+  speedTurnScore: 0,
+  speedTurnCorrect: 0,
+  speedSkipsLeft: 1,
+  speedActive: false,
+  cat: '',
+  level: '',
+  word: '',
+  usedTopics: new Set(),
+  timerId: null,
+  secondsLeft: TOTAL_SECONDS,
+  history: []
+};
+
+/* ---------- ابزارهای کمکی ---------- */
+const $ = function (id) { return document.getElementById(id); };
+const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+function fa(n) { return String(n).replace(/\d/g, function (d) { return FA_DIGITS[+d]; }); }
+
+/* ---------- صدا (Web Audio) ---------- */
+let audioCtx = null;
+function playTone(freq, dur, type, vol) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.12, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (dur || 0.2));
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + (dur || 0.2) + 0.03);
+  } catch (e) { /* بدون صدا مشکلی نیست */ }
+}
+function beepSelect() { playTone(620, 0.06, 'sine', 0.06); }
+function beepFound() { playTone(660, 0.12, 'sine', 0.14); setTimeout(function () { playTone(880, 0.18, 'sine', 0.14); }, 130); setTimeout(function () { playTone(1100, 0.25, 'sine', 0.12); }, 300); }
+function beepFail() { playTone(240, 0.25, 'sawtooth', 0.1); setTimeout(function () { playTone(170, 0.3, 'sawtooth', 0.1); }, 220); }
+function beepTick() { playTone(950, 0.04, 'square', 0.05); }
+function beepWin() { [523, 659, 784, 1047].forEach(function (f, i) { setTimeout(function () { playTone(f, 0.22, 'sine', 0.13); }, i * 160); }); }
+
+/* ---------- تم روشن/تیره — مثل نسخه قبل: آیکون ثابت ☀️، فقط سوییچ و ذخیره ---------- */
+(function initTheme() {
+  try {
+    if (localStorage.getItem('pantomime-theme') === 'light') {
+      document.body.classList.add('light');
+    }
+  } catch (e) { /* localStorage در دسترس نیست */ }
+})();
+$('themeBtn').addEventListener('click', function () {
+  document.body.classList.toggle('light');
+  try {
+    localStorage.setItem('pantomime-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  } catch (e) {}
+});
+
+/* ---------- تمام صفحه ---------- */
+$('fsBtn').addEventListener('click', function () {
+  if (!document.fullscreenElement) {
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+});
+
+/* ---------- دکمه‌های برگشت ---------- */
+$('backFromMode').addEventListener('click', function () { beepSelect(); showScreen('screen-setup'); });
+$('backFromCoin').addEventListener('click', function () { beepSelect(); showScreen('screen-mode'); });
+$('backFromChoose').addEventListener('click', function () { beepSelect(); showScreen('screen-mode'); });
+
+/* ---------- تعویض صفحه ---------- */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function (s) { s.classList.remove('active'); });
+  $(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ---------- مرحله ۱: معرفی تیم‌ها ---------- */
+function showToast(msg, ms) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 2400);
+}
+
+/* ✅ اعتبارسنجی: اگر اسم تیمی وارد نشده باشد خطا می‌دهد و جلو نمی‌رود */
+function markTeamError(empty1, empty2) {
+  [['team1', empty1], ['team2', empty2]].forEach(function (p) {
+    const el = $(p[0]);
+    el.classList.remove('input-error');
+    if (p[1]) { void el.offsetWidth; el.classList.add('input-error'); } /* پخش دوباره انیمیشن لرزش */
+  });
+  const target = empty1 ? $('team1') : (empty2 ? $('team2') : null);
+  if (target) target.focus();
+}
+
+$('startBtn').addEventListener('click', function () {
+  const t1 = $('team1').value.trim();
+  const t2 = $('team2').value.trim();
+  const empty1 = !t1, empty2 = !t2;
+  if (empty1 || empty2) {
+    markTeamError(empty1, empty2);
+    beepFail();
+    showToast(empty1 && empty2 ? '⚠️ اسم هر دو تیم را وارد کن!' : (empty1 ? '⚠️ اسم تیم اول را وارد کن!' : '⚠️ اسم تیم دوم را وارد کن!'));
+    return;
+  }
+  $('team1').classList.remove('input-error');
+  $('team2').classList.remove('input-error');
+  state.teams = [t1, t2];
+  $('modeTeams').textContent = state.teams[0] + ' و ' + state.teams[1];
+  beepSelect();
+  showScreen('screen-mode');
+});
+
+/* پاک شدن خودکار حالت خطا به محض تایپ کردن */
+['team1', 'team2'].forEach(function (id) {
+  $(id).addEventListener('input', function () {
+    if ($(id).value.trim()) $(id).classList.remove('input-error');
+  });
+});
+
+/* ---------- مرحله ۲: انتخاب حالت ---------- */
+document.querySelectorAll('.mode-card[data-mode]').forEach(function (card) {
+  card.addEventListener('click', function () {
+    state.mode = card.getAttribute('data-mode');
+    state.totalTurns = state.mode === 'speed' ? SPEED_TURNS * 2 : NORMAL_TURNS;
+    beepSelect();
+    $('coinFrontLabel').textContent = state.teams[0];
+    $('coinBackLabel').textContent = state.teams[1];
+    $('coinSideT1').textContent = state.teams[0];
+    $('coinSideT2').textContent = state.teams[1];
+    $('coinResult').textContent = 'سکه را بیندازید';
+    $('coinNext').style.display = 'none';
+    $('flipBtn').style.display = '';
+    $('flipBtn').disabled = false;
+    const coinEl = $('coin');
+    coinRotation = 0;
+    coinEl.style.transition = 'none';
+    coinEl.style.transform = 'rotateY(0deg)';
+    void coinEl.offsetWidth;
+    coinEl.style.transition = '';
+    showScreen('screen-coin');
+  });
+});
+
+/* ---------- مرحله ۳: قرعه‌کشی سکه ---------- */
+let coinRotation = 0;
+let coinWinner = 0;
+$('flipBtn').addEventListener('click', function () {
+  $('flipBtn').disabled = true;
+  $('coinResult').textContent = 'سکه در حال چرخش…';
+  playTone(520, 0.1, 'triangle', 0.1);
+  const shadow = $('coinShadow');
+  shadow.classList.remove('flipping');
+  void shadow.offsetWidth;
+  shadow.classList.add('flipping');
+  let ticks = 0;
+  const flipSound = setInterval(function () {
+    playTone(700 + Math.random() * 500, 0.03, 'square', 0.03);
+    ticks++;
+    if (ticks > 14) clearInterval(flipSound);
+  }, 170);
+  coinWinner = Math.random() < 0.5 ? 0 : 1;
+  const target = coinWinner === 0 ? 0 : 180;
+  const delta = ((target - (coinRotation % 360)) + 360) % 360;
+  coinRotation += 1980 + delta;
+  $('coin').style.transform = 'rotateY(' + coinRotation + 'deg)';
+  setTimeout(function () {
+    clearInterval(flipSound);
+    shadow.classList.remove('flipping');
+    const sideTag = coinWinner === 0 ? '🟡 روی سکه' : '🔵 پشت سکه';
+    $('coinResult').innerHTML =
+      '<span class="side-tag">' + sideTag + '</span><br>' +
+      '🎊 سکه به نفع «<b>' + state.teams[coinWinner] + '</b>» افتاد!<br>' +
+      '<span style="font-size:13.5px">' + state.teams[coinWinner] + ' بازی را شروع می‌کند! 🎤</span>';
+    state.startingTeam = coinWinner;
+    beepFound();
+    burstConfetti(60);
+    $('flipBtn').style.display = 'none';
+    $('coinNext').style.display = '';
+  }, 2700);
+});
+
+$('coinNext').addEventListener('click', function () {
+  beepSelect();
+  startGameTurns();
+});
+
+function startGameTurns() {
+  state.scores = [0, 0];
+  state.turn = 0;
+  state.history = [];
+  state.usedTopics.clear();
+  state.speedTurnScore = 0;
+  state.speedTurnCorrect = 0;
+  state.speedSkipsLeft = 1;
+  state.speedActive = false;
+  if (state.mode === 'speed') {
+    pickSpeedWord();
+    beginRound();
+  } else {
+    openChoose();
+  }
+}
+
+/* ---------- کلمه تصادفی حالت سرعتی ---------- */
+function pickSpeedWord() {
+  const combos = [];
+  SPEED_CATS.forEach(function (c) {
+    LEVELS.forEach(function (l) {
+      const hasFresh = WORDS[c][l].some(function (w) { return !state.usedTopics.has(c + '|' + l + '|' + w); });
+      if (hasFresh) combos.push([c, l]);
+    });
+  });
+  if (combos.length === 0) {
+    state.usedTopics.clear();
+    SPEED_CATS.forEach(function (c) {
+      LEVELS.forEach(function (l) { combos.push([c, l]); });
+    });
+  }
+  const pick = combos[Math.floor(Math.random() * combos.length)];
+  state.cat = pick[0];
+  state.level = pick[1];
+  state.word = pickWord(state.cat, state.level);
+}
+
+/* ---------- مرحله ۴: انتخاب دسته و سطح ---------- */
+function currentTeamIndex() {
+  return state.turn % 2 === 0 ? state.startingTeam : 1 - state.startingTeam;
+}
+
+function openChoose() {
+  const ti = currentTeamIndex();
+  $('chooseTurn').textContent = 'نوبت «' + state.teams[ti] + '» — دسته و سطح را انتخاب کن';
+  updateTurnScreen();
+  document.querySelectorAll('.cat-btn').forEach(function (b) { b.classList.remove('selected'); });
+  document.querySelectorAll('.level-btn').forEach(function (b) {
+    b.classList.remove('selected');
+    b.querySelector('.lv-pts').textContent = '';
+  });
+  $('levelLabel').style.display = 'none';
+  $('levelGrid').style.display = 'none';
+  showScreen('screen-choose');
+}
+
+/* ---------- نوار پیشرفت و نقاط نوبت‌ها ---------- */
+function updateTurnScreen() {
+  const perTeam = state.totalTurns / 2;
+  const doneStart = Math.ceil(state.turn / 2);
+  const doneOther = Math.floor(state.turn / 2);
+  $('progressBar').innerHTML =
+    '<span class="team-label"><span class="team-dot s1"></span>' + state.teams[state.startingTeam] + ': ' + fa(doneStart) + ' از ' + fa(perTeam) + '</span>' +
+    '<span class="team-label"><span class="team-dot s2"></span>' + state.teams[1 - state.startingTeam] + ': ' + fa(doneOther) + ' از ' + fa(perTeam) + '</span>';
+  const dots = $('roundDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < perTeam; i++) {
+    const d1 = document.createElement('div');
+    d1.className = 'round-dot' + (i < doneStart ? ' s1' : '') + (state.turn % 2 === 0 && i === doneStart ? ' current' : '');
+    dots.appendChild(d1);
+    const d2 = document.createElement('div');
+    d2.className = 'round-dot' + (i < doneOther ? ' s2' : '') + (state.turn % 2 === 1 && i === doneOther ? ' current' : '');
+    dots.appendChild(d2);
+  }
+}
+
+document.querySelectorAll('.cat-btn').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.querySelectorAll('.cat-btn').forEach(function (x) { x.classList.remove('selected'); });
+    b.classList.add('selected');
+    state.cat = b.getAttribute('data-cat');
+    document.querySelectorAll('.level-btn').forEach(function (lb) {
+      const lv = lb.getAttribute('data-level');
+      lb.querySelector('.lv-pts').textContent = '— ' + fa(POINTS[state.cat][lv]) + ' امتیاز + پاداش زمان ⏱️';
+    });
+    $('levelLabel').style.display = '';
+    $('levelGrid').style.display = '';
+    beepSelect();
+  });
+});
+
+document.querySelectorAll('.level-btn').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.querySelectorAll('.level-btn').forEach(function (x) { x.classList.remove('selected'); });
+    b.classList.add('selected');
+    state.level = b.getAttribute('data-level');
+    state.word = pickWord(state.cat, state.level);
+    beepSelect();
+    beginRound();
+  });
+});
+
+/* ---------- انتخاب کلمه بدون تکرار ---------- */
+function pickWord(cat, level) {
+  const pool = WORDS[cat][level];
+  const key = function (w) { return cat + '|' + level + '|' + w; };
+  let candidates = pool.filter(function (w) { return !state.usedTopics.has(key(w)); });
+  if (candidates.length === 0) {
+    pool.forEach(function (w) { state.usedTopics.delete(key(w)); });
+    candidates = pool.slice();
+  }
+  const w = candidates[Math.floor(Math.random() * candidates.length)];
+  state.usedTopics.add(key(w));
+  return w;
+}
+
+/* ---------- شمارش معکوس و شروع نوبت ---------- */
+function beginRound() { showCountdown(openPlay); }
+
+function showCountdown(cb) {
+  const ov = $('countdownOverlay');
+  const num = $('countdownNum');
+  ov.classList.add('show');
+  let n = 3;
+  num.textContent = fa(n);
+  playTone(600, 0.15, 'sine', 0.15);
+  const iv = setInterval(function () {
+    n--;
+    if (n > 0) {
+      num.textContent = fa(n);
+      playTone(600, 0.15, 'sine', 0.15);
+    } else {
+      num.textContent = 'برو!';
+      playTone(900, 0.3, 'sine', 0.16);
+      clearInterval(iv);
+      setTimeout(function () {
+        ov.classList.remove('show');
+        cb();
+      }, 550);
+    }
+  }, 800);
+}
+
+/* ---------- مرحله ۵: بازی ---------- */
+function openPlay() {
+  showScreen('screen-play');
+  const ti = currentTeamIndex();
+  const isSpeed = state.mode === 'speed';
+  state.speedActive = isSpeed;
+  $('playTeam').textContent = '👥 ' + state.teams[ti];
+  $('playTurn').textContent = isSpeed
+    ? '⚡ دور ' + fa(state.turn + 1) + ' از ' + fa(state.totalTurns)
+    : 'نوبت ' + fa(state.turn + 1) + ' از ' + fa(state.totalTurns);
+  $('playCat').textContent = state.cat + ' • ' + state.level;
+  $('playScores').innerHTML =
+    '<span>' + state.teams[0] + ': <b>' + fa(state.scores[0]) + '</b></span>' +
+    '<span>' + state.teams[1] + ': <b>' + fa(state.scores[1]) + '</b></span>';
+  $('speedBanner').style.display = isSpeed ? '' : 'none';
+  $('speedStats').style.display = isSpeed ? '' : 'none';
+  $('skipBtn').style.display = isSpeed ? '' : 'none';
+  $('failBtn').style.display = isSpeed ? 'none' : '';
+  $('foundBtn').textContent = isSpeed ? '✅ درست' : '✓ حدس زدند';
+  $('topicText').textContent = state.word;
+  revealTopic();
+  if (isSpeed) updateSpeedStats();
+  state.secondsLeft = TOTAL_SECONDS;
+  resetRing();
+  state.timerId = setInterval(tick, 1000);
+}
+
+function revealTopic() {
+  const el = $('topicText');
+  el.classList.remove('reveal');
+  void el.offsetWidth;
+  el.classList.add('reveal');
+}
+
+function updateSpeedStats() {
+  $('speedTurnScore').textContent = fa(state.speedTurnScore);
+  $('speedCorrectCount').textContent = fa(state.speedTurnCorrect);
+  $('speedSkipsLeft').textContent = fa(state.speedSkipsLeft);
+  const sb = $('skipBtn');
+  sb.disabled = state.speedSkipsLeft <= 0;
+  sb.textContent = state.speedSkipsLeft > 0 ? '⏭️ رد کلمه' : '⏭️ رد شده';
+}
+
+function nextSpeedWord() {
+  pickSpeedWord();
+  $('playCat').textContent = state.cat + ' • ' + state.level;
+  $('topicText').textContent = state.word;
+  revealTopic();
+}
+
+function resetRing() {
+  const r = $('ringFg');
+  r.style.strokeDasharray = RING_CIRC;
+  r.style.strokeDashoffset = 0;
+  r.classList.remove('danger');
+  r.classList.remove('warning');
+  $('secondsText').classList.remove('danger');
+  $('secondsText').classList.remove('warning');
+  $('secondsText').textContent = fa(TOTAL_SECONDS);
+}
+
+/* رندر حلقه تایمر (جدید — جدا شده از tick برای استفاده تماشاگر) */
+function renderTimer(silent) {
+  const frac = Math.max(state.secondsLeft, 0) / TOTAL_SECONDS;
+  $('ringFg').style.strokeDashoffset = RING_CIRC * (1 - frac);
+  $('secondsText').textContent = fa(Math.max(state.secondsLeft, 0));
+  const warn = state.secondsLeft <= 20 && state.secondsLeft > 10;
+  const danger = state.secondsLeft <= 10 && state.secondsLeft > 0;
+  $('ringFg').classList.toggle('warning', warn);
+  $('secondsText').classList.toggle('warning', warn);
+  $('ringFg').classList.toggle('danger', danger);
+  $('secondsText').classList.toggle('danger', danger);
+  if (danger && !silent) beepTick();
+}
+
+function tick() {
+  state.secondsLeft--;
+  renderTimer(false);
+  if (state.secondsLeft <= 0) {
+    if (state.mode === 'speed') speedEnd();
+    else endTurn('fail', true);
+  }
+}
+
+$('foundBtn').addEventListener('click', function () {
+  if (state.mode === 'speed') speedCorrect();
+  else endTurn('ok', false);
+});
+$('failBtn').addEventListener('click', function () { endTurn('fail', false); });
+$('skipBtn').addEventListener('click', function () { speedSkip(); });
+
+/* ---------- منطق حالت سرعتی ---------- */
+function speedCorrect() {
+  if (!state.speedActive) return;
+  const pts = POINTS[state.cat][state.level];
+  state.speedTurnScore += pts;
+  state.speedTurnCorrect++;
+  updateSpeedStats();
+  beepFound();
+  burstConfetti(40);
+  state.secondsLeft = TOTAL_SECONDS;
+  resetRing();
+  nextSpeedWord();
+}
+
+function speedSkip() {
+  if (!state.speedActive || state.speedSkipsLeft <= 0) return;
+  state.speedSkipsLeft--;
+  updateSpeedStats();
+  beepFail();
+  nextSpeedWord();
+}
+
+function speedEnd() {
+  if (!state.speedActive) return;
+  state.speedActive = false;
+  if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+  const ti = currentTeamIndex();
+  state.scores[ti] += state.speedTurnScore;
+  beepFail();
+  state.history.push({
+    team: ti, cat: 'تصادفی 🎲', level: 'تصادفی 🎲', word: '⚡ دست سرعتی',
+    result: state.speedTurnScore > 0 ? 'ok' : 'fail', pts: state.speedTurnScore, correct: state.speedTurnCorrect
+  });
+  showTurnResult(true);
+}
+
+/* ---------- مرحله ۶: نتیجه نوبت — گزارش کامل ---------- */
+function endTurn(result, byTime) {
+  if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+  const ti = currentTeamIndex();
+  let pts = 0, basePts = 0, bonusPts = 0;
+  if (result === 'ok') {
+    basePts = POINTS[state.cat][state.level];
+    bonusPts = normalTimePoints(state.secondsLeft);
+    pts = basePts + bonusPts;
+    state.scores[ti] += pts;
+    beepFound();
+    burstConfetti(90);
+  } else {
+    beepFail();
+  }
+  state.history.push({ team: ti, cat: state.cat, level: state.level, word: state.word, result: result, pts: pts, byTime: !!byTime, left: Math.max(state.secondsLeft, 0), base: basePts, bonus: bonusPts });
+  showTurnResult(false);
+}
+
+function showTurnResult(isSpeed) {
+  const ti = currentTeamIndex();
+  let html = '<div class="report-row"><span class="r-label">🎤 تیم اجراکننده</span><span class="r-val">' + state.teams[ti] + '</span></div>';
+  let gained;
+  if (isSpeed) {
+    gained = state.speedTurnScore;
+    html +=
+      '<div class="report-row"><span class="r-label">✅ کلمات درست</span><span class="r-val">' + fa(state.speedTurnCorrect) + '</span></div>' +
+      '<div class="report-row"><span class="r-label">⏭️ کلمات رد شده</span><span class="r-val">' + fa(1 - state.speedSkipsLeft) + '</span></div>';
+  } else {
+    const h = state.history[state.history.length - 1];
+    gained = h.pts;
+    html +=
+      '<div class="report-row"><span class="r-label">🎯 دسته / سطح</span><span class="r-val">' + h.cat + ' / ' + h.level + '</span></div>' +
+      '<div class="report-row"><span class="r-label">💡 کلمه</span><span class="r-val">' + h.word + '</span></div>' +
+      '<div class="report-row"><span class="r-label">🏁 نتیجه</span><span class="r-val">' + (h.result === 'ok' ? '✅ درست حدس زد' : (h.byTime ? '⏰ زمان تمام شد' : '❌ حدس نزدند')) + '</span></div>';
+    if (h.result === 'ok') {
+      html += '<div class="report-row"><span class="r-label">⏱️ زمان باقی‌مانده</span><span class="r-val">' + fa(h.left) + ' ثانیه</span></div>';
+      html += '<div class="report-row"><span class="r-label">🎯 امتیاز سطح</span><span class="r-val">' + fa(h.base) + '</span></div>';
+      html += '<div class="report-row"><span class="r-label">⚡ پاداش زمان</span><span class="r-val">+' + fa(h.bonus) + '</span></div>';
+      if (h.bonus === 0) {
+        html += '<div class="report-row"><span class="r-label">⚠️ کمتر از ۱۰ ثانیه مانده بود</span><span class="r-val">بدون پاداش زمان</span></div>';
+      }
+    }
+  }
+  html +=
+    '<div class="report-row"><span class="r-label">📊 امتیاز ' + state.teams[0] + '</span><span class="r-val">' + fa(state.scores[0]) + '</span></div>' +
+    '<div class="report-row"><span class="r-label">📊 امتیاز ' + state.teams[1] + '</span><span class="r-val">' + fa(state.scores[1]) + '</span></div>' +
+    '<div class="report-row total"><span class="r-label">امتیاز این دست</span><span class="r-val score-big">+' + fa(gained) + '</span></div>';
+  $('scoreReport').innerHTML = html;
+  const over = state.turn + 1 >= state.totalTurns;
+  $('nextTurnMsg').textContent = over
+    ? 'بازی تمام شد! 🎉 برای دیدن نتیجه نهایی دکمه زیر را بزنید'
+    : 'نوبت بعدی با تیم «' + state.teams[1 - ti] + '» است';
+  $('nextTurnBtn').textContent = over ? '🏆 دیدن نتیجه نهایی' : 'نوبت بعدی';
+  showScreen('screen-result');
+}
+
+$('nextTurnBtn').addEventListener('click', function () {
+  state.turn++;
+  if (state.turn >= state.totalTurns) { showFinal(); return; }
+  beepSelect();
+  if (state.mode === 'speed') {
+    state.speedTurnScore = 0;
+    state.speedTurnCorrect = 0;
+    state.speedSkipsLeft = 1;
+    pickSpeedWord();
+    beginRound();
+  } else {
+    openChoose();
+  }
+});
+
+/* ---------- مرحله ۷: پایان بازی ---------- */
+function showFinal() {
+  const s = state.scores;
+  const winner = s[0] !== s[1];
+  const wi = s[0] > s[1] ? 0 : 1;
+  $('finalEmoji').textContent = winner ? '🏆' : '🤝';
+  $('finalTitle').textContent = winner
+    ? '«' + state.teams[wi] + '» برنده شد!'
+    : 'بازی مساوی شد! هر دو تیم برنده‌اند';
+  $('finalScore').textContent = winner
+    ? 'با ' + fa(s[wi]) + ' امتیاز — ' + state.teams[0] + ' ' + fa(s[0]) + ' / ' + state.teams[1] + ' ' + fa(s[1])
+    : state.teams[0] + ' ' + fa(s[0]) + ' — ' + fa(s[1]) + ' ' + state.teams[1];
+
+  if (state.mode === 'speed') {
+    const c0 = state.history.filter(function (h) { return h.team === 0; }).reduce(function (a, h) { return a + (h.correct || 0); }, 0);
+    const c1 = state.history.filter(function (h) { return h.team === 1; }).reduce(function (a, h) { return a + (h.correct || 0); }, 0);
+    $('finalSpeedStats').style.display = '';
+    $('finalSpeedStats').textContent = '⚡ کلمات درست — ' + state.teams[0] + ': ' + fa(c0) + ' • ' + state.teams[1] + ': ' + fa(c1);
+  } else {
+    $('finalSpeedStats').style.display = 'none';
+  }
+
+  $('historyBody').innerHTML = state.history.map(function (h, i) {
+    return '<tr>' +
+      '<td>' + fa(i + 1) + '</td>' +
+      '<td>' + state.teams[h.team] + '</td>' +
+      '<td>' + h.cat + '</td>' +
+      '<td>' + h.level + '</td>' +
+      '<td>' + h.word + '</td>' +
+      '<td>' + (h.result === 'ok' ? '✓ حدس زدند' : '✗ حدس نزدند') + '</td>' +
+      '<td>' + fa(h.pts) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  if (winner) { beepWin(); burstConfetti(220); } else { beepSelect(); }
+  showScreen('screen-final');
+}
+
+/* ---------- دکمه پایانی ---------- */
+$('newGameBtn').addEventListener('click', function () {
+  location.reload();
+});
+
+/* ---------- کانفتی ---------- */
+const confettiCanvas = $('confetti');
+const cctx = confettiCanvas.getContext('2d');
+function burstConfetti(count) {
+  confettiCanvas.style.display = 'block';
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+  const colors = ['#8b5cf6', '#a78bfa', '#10b981', '#f43f5e', '#f59e0b', '#ffffff'];
+  const pieces = [];
+  for (let i = 0; i < (count || 120); i++) {
+    pieces.push({
+      x: Math.random() * confettiCanvas.width,
+      y: -20 - Math.random() * confettiCanvas.height * 0.4,
+      w: 6 + Math.random() * 6,
+      h: 8 + Math.random() * 8,
+      c: colors[Math.floor(Math.random() * colors.length)],
+      vy: 2 + Math.random() * 3.5,
+      vx: -1.5 + Math.random() * 3,
+      r: Math.random() * Math.PI,
+      vr: -0.15 + Math.random() * 0.3
+    });
+  }
+  let frames = 0;
+  (function anim() {
+    cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    pieces.forEach(function (p) {
+      p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.r);
+      cctx.fillStyle = p.c;
+      cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      cctx.restore();
+    });
+    frames++;
+    if (frames < 160) requestAnimationFrame(anim);
+    else confettiCanvas.style.display = 'none';
+  })();
+}
+
+/* ---------- مقداردهی اولیه حلقه تایمر ---------- */
+$('ringFg').style.strokeDasharray = RING_CIRC;
+$('ringFg').style.strokeDashoffset = 0;
+</script>
+</body>
+</html>
+</body>
+</html>
